@@ -1,4 +1,5 @@
 import os
+import sys
 import asyncio
 from dotenv import load_dotenv
 from typing import Optional
@@ -109,6 +110,7 @@ async def click_element(params: ElementActionParams, browser: BrowserContext):
 
 async def main():
     current_location = "Philadelphia"
+    today = datetime.now().strftime("%m-%d-%Y")
 
     assignment_field_activator_xpath = "//div[contains(@class, 'formElement') and contains(@class, 'fieldFormElement') and .//div[@id='Assignment']]"
     assignment_dropdown_option_xpath = "//li[contains(@class, 'mru-item') and .//div[contains(@class, 'code-text') and normalize-space()='(9996610)'] and .//div[contains(@class, 'secondary-text') and contains(., '96410')]]" 
@@ -122,13 +124,13 @@ async def main():
 
     agent = Agent(
         task = f"""
-Objective: Input my time into the CMS tracker for my work. Today's date is 04-22-2025.
+Objective: Input my time into the CMS tracker for my work. Today's date is {today}.
 
 Starting URL: https://{os.getenv('username')}:{os.getenv('password')}@cmsotg.gtus.com/Expert_PROD/ApplicationServices/OnTheGoTime
 
 Instructions:
 1.  Navigate to the starting URL. Authentication is handled by the URL. Wait for the main time entry page to load.
-2.  Verify the displayed date is correct for today (04-22-2025). If not, adjust it.
+2.  Verify the displayed date is correct for today ({today}). If not, adjust it.
 3.  **Activate the Client/Assignment field:** Use the 'Click Element' action, providing the specific XPath `{assignment_field_activator_xpath}` in the `xpath` parameter. Click this specific field container to reveal the search input.
 4.  **Input Client/Assignment Search Text:** Wait for the search input field to appear. Use the standard 'Input Text' action to type '9996610' into the input field identified by the CSS selector `#search-control-input` and placeholder of "Client / Assignment" and click enter and wait 2 seconds.
 5.  **Select Client/Assignment Option:** Wait for the dropdown list of results to appear. Use the 'Click Element' action, providing the specific XPath `{assignment_dropdown_option_xpath}` in the `xpath` parameter, and set the description to 'Click dropdown option with code (9996610)'.
@@ -139,7 +141,7 @@ Instructions:
 10. **Submit:** Click the submit button with the 'Click Element' action, providing the specific XPath `{submit_button_xpath}` in the `xpath` parameter.
 """,
         llm=ChatOpenAI(model="gpt-4.1-mini"),
-        controller=controller, # Pass the controller with the custom action
+        controller=controller,
         browser=browser,
     )
     result = await agent.run()
